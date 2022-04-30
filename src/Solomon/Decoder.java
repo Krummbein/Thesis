@@ -130,7 +130,8 @@ public class Decoder {
         return m;
     }
 
-    public int[] decode257(int[] allC, HashSet<Integer> bad) {
+    public int[] decode257(int[] allC) //, HashSet<Integer> bad
+    {
         GF257 wn = new GF257(1);
         int[][] A = new int[k][k];
         int[] c = new int[k];
@@ -139,7 +140,7 @@ public class Decoder {
 
         for(int i = 0; i < allC.length; i++) {
             if(i != 0) wn = wn.mult(gen);
-            if(bad.contains(i)) continue;
+            //if(bad.contains(i)) continue;
 
             GF257 cur = new GF257(1);
             for(int j = 0; j < k; j++) {

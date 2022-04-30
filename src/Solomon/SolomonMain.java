@@ -75,7 +75,7 @@ public class SolomonMain {
         s2 = new String(c2);
 
         // e.fast decoding
-        int[] c4 = d.decode257(cFFT, bad);
+        int[] c4 = d.decode257(cFFT); //, bad
         char[] c5 = new char[c4.length];
         for(int i = 0; i < c4.length; i++) {
             c5[i] = (char)(c4[i]);
@@ -83,7 +83,7 @@ public class SolomonMain {
         s3 = new String(c5);
 
         // e.slow257 decoding
-        c4 = d.decode257(c257, bad);
+        c4 = d.decode257(c257); //, bad
         c5 = new char[c4.length];
         for(int i = 0; i < c4.length; i++) {
             c5[i] = (char)(c4[i]);
