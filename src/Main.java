@@ -1,13 +1,43 @@
 import Hamm.HammingEncoder;
+import Solomon.SolomonMain;
 
 import java.util.*;
 
 public class Main {
     public static void main(String args[]) {
+        SolomonMain sol = new SolomonMain();
         HammingEncoder hamm = new HammingEncoder();
-        //hamm.manualInit();
-        int[] encodedMessage = hamm.generateCode(new int[] {1,0});
+
+        int[] starterMessage = new int[] {1,0,0,1,0,1,1,1,1,0,1};
+        sol.init(starterMessage);
+        sol.encode();
+        sol.decode();
+        sol.showResults();
+        /*
+        int[] hammEncodedMessage = hamm.generateCode(starterMessage);
+
         int[] messedUpMessage = hamm.addErrors(encodedMessage);
+        Integer[] recievedMessage = hamm.receive(messedUpMessage);
+
+
+        System.out.println("Generated code is:");
+        for (int i = 0; i < encodedMessage.length; i++) {
+            System.out.print(encodedMessage[encodedMessage.length - i - 1]);
+        }
+        System.out.println();
+
+        System.out.println("Sent code is:");
+        for (int i = 0; i < encodedMessage.length; i++) {
+            System.out.print(encodedMessage[encodedMessage.length - i - 1]);
+        }
+        System.out.println();
+
+        System.out.println("Recieved code is:");
+        for (int i = 0; i < recievedMessage.length; i++) {
+            System.out.print(recievedMessage[recievedMessage.length - i - 1]);
+        }
+        System.out.println();
+        */
 
     }
 }

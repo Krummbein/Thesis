@@ -1,6 +1,7 @@
 package Hamm;
 
 import java.util.*;
+import java.util.Collection;
 
 public class HammingEncoder {
     int messageLength;
@@ -24,6 +25,7 @@ public class HammingEncoder {
         System.out.println();
     }
 */
+
     public void manualInit() {
         System.out.println("Enter the number of bits for the Hamming data:");
         messageLength = scan.nextInt(); //message length
@@ -120,10 +122,12 @@ public class HammingEncoder {
         return encodedMessage;
     }
 
-    Integer[] receive(int recievedMessage[], int parity_count) {
+    public Integer[] receive(int recievedMessage[]) {
         // This is the receiver code. It receives a Hamming code in array 'a'.
         // We also require the number of parity bits added to the original data.
         // Now it must detect the error and correct it, if any.
+
+        int parity_count = recievedMessage.length - messageLength;
 
         List<Integer> messageHolder = new ArrayList<Integer>();
 
@@ -173,6 +177,7 @@ public class HammingEncoder {
         }
         System.out.println();
 
+        Collections.reverse(messageHolder);
         Integer[] finalMessage = new Integer[messageHolder.size()];
         finalMessage = messageHolder.toArray(finalMessage);
 

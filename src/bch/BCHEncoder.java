@@ -20,26 +20,23 @@ public class BCHEncoder {
     * bb[] = coefficients of redundancy polynomial ( x**(10) i(x) ) modulo g(x)
     * numerr = number of errors
     * errpos[] = error positions
-    * recd[] = coefficients of received polynomial
+    * recd[] = coefficients of received polynomial - encoded message
     * decerror = number of decoding errors (in MESSAGE positions)
      */
 
-// m = 5
     int m = 5, n = 31, k = 21, t = 2, d = 5;
-    int length = 31;
+    int length = 31; // encoded message length
     int p[] = new int[6];
     int alpha_to[] = new int[32];
     int index_of[] = new int[32];
     int g[] = new int[11];
-    int recd[] = new int[31];
-    int data[] = new int[21];
+    //int recd[] = new int[31]; // encoded message, messedup message, final message
+    //int data[] = new int[21]; // starting message
     int bb[] = new int[11];
-    int numerr, decerror = 0;
+    int numerr;
     int errpos[] = new int[32];
-    int seed;
 
-    // temporary
-    int i;
+
 
     void read_p() {
         p[0] = p[2] = p[5] = 1;
@@ -150,41 +147,54 @@ public class BCHEncoder {
         System.out.printf("\n");
     }
 
-    void encode_bch() {
+    void init(){
+        read_p(); /* read generator polynomial g(x) */
+        generate_gf(); /* generate the Galois Field GF(2**m) */
+        gen_poly(); /* Compute the generator polynomial of BCH code */
+    }
+
+    int[] encode_bch(int[] message) {
+        int[] startingMessage = message;
+
+        int recd[] = new int[startingMessage.length + 10];
+
         int i, j;
         int feedback;
-        for (i = 0; i < length - k; i++)
+        for (i = 0; i < recd.length - startingMessage.length; i++)
             bb[i] = 0;
         for (i = k - 1; i >= 0; i--) {
-            feedback = data[i] ^ bb[length - k - 1];
+            feedback = startingMessage[i] ^ bb[recd.length - startingMessage.length - 1];
             if (feedback != 0) {
-                for (j = length - k - 1; j > 0; j--)
+                for (j = recd.length - startingMessage.length - 1; j > 0; j--)
                     if (g[j] != 0)
                         bb[j] = bb[j - 1] ^ feedback;
                     else
                         bb[j] = bb[j - 1];
                 bb[0] = g[0] & feedback;// g[0] && feedback
             } else {
-                for (j = length - k - 1; j > 0; j--)
+                for (j = recd.length - startingMessage.length - 1; j > 0; j--)
                     bb[j] = bb[j - 1];
                 bb[0] = 0;
             }
         }
 
-        for (i = 0; i < length - k; i++)
+        for (i = 0; i < recd.length - startingMessage.length; i++)
             recd[i] = bb[i]; /* first (length-k) bits are redundancy */
         for (i = 0; i < k; i++)
-            recd[i + length - k] = data[i]; /* last k bits are data */
+            recd[i + recd.length - startingMessage.length] = startingMessage[i]; /* last k bits are data */
         System.out.printf("c(x) = ");
-        for (i = 0; i < length; i++) {
+        for (i = 0; i < recd.length; i++) {
             System.out.printf("%1d", recd[i]);
             if ((i != 0) && ((i % 70) == 0))
                 System.out.printf("\n");
         }
         System.out.printf("\n");
+
+        return recd;
     }
 
-    void decode_bch() {
+    int[] decode_bch(int[] recievedMessage) {
+        int recd[] = recievedMessage;
         int i, j, q;
         int elp[] = new int[3], s[] = new int[5], s3;
         int count = 0, syn_error = 0;
@@ -194,7 +204,7 @@ public class BCHEncoder {
         System.out.printf("s[] = (");
         for (i = 1; i <= 4; i++) {
             s[i] = 0;
-            for (j = 0; j < length; j++)
+            for (j = 0; j < recd.length; j++)
                 if (recd[j] != 0)
                     s[i] ^= alpha_to[(i * j) % n];
             if (s[i] != 0)
@@ -261,22 +271,11 @@ public class BCHEncoder {
             } else if (s[2] != -1) /* Error detection */
                 System.out.printf("incomplete decoding\n");
         }
+        return recd;
     }
 
-    void init(){
-        read_p(); /* read generator polynomial g(x) */
-        generate_gf(); /* generate the Galois Field GF(2**m) */
-        gen_poly(); /* Compute the generator polynomial of BCH code */
-        seed = 1;
-        // srand(seed);
-        Random random = new Random(seed);
-        /* Randomly generate DATA */
-
-        for (i = 0; i < k; i++)
-            data[i] = (random.nextInt() & 67108864) >> 26; // 0100000000000000000000000000
-    }
-
-    public void addErrors() {
+    public int[] addErrors(int[] message) {
+        int[] messageToSpoil = message;
         System.out.printf("Enter the number of errors and their positions: ");
 
         BufferedReader wt = new BufferedReader(new InputStreamReader(System.in));
@@ -288,7 +287,7 @@ public class BCHEncoder {
             e.printStackTrace();
         }
         numerr = Integer.valueOf(numerrStr);
-        for (i = 0; i < numerr; i++) {
+        for (int i = 0; i < numerr; i++) {
             String errposStr = null;
             try {
                 errposStr = wt.readLine();
@@ -297,39 +296,32 @@ public class BCHEncoder {
                 e.printStackTrace();
             }
             errpos[i] = Integer.valueOf(errposStr);
-            recd[errpos[i]] ^= 1;
+            messageToSpoil[errpos[i]] ^= 1;
         }
         System.out.printf("r(x) = ");
-        for (i = 0; i < length; i++)
-            System.out.printf("%1d", recd[i]);
+        for (int i = 0; i < length; i++)
+            System.out.printf("%1d", messageToSpoil[i]);
         System.out.printf("\n");
-    }
 
-    public void printResults(){
-        System.out.printf("Results:\n");
-        System.out.printf("original data  = ");
-        for (i = 0; i < k; i++)
-            System.out.printf("%1d", data[i]);
-        System.out.printf("\nrecovered data = ");
-        for (i = length - k; i < length; i++)
-            System.out.printf("%1d", recd[i]);
-        System.out.printf("\n");
-        /* decoding errors: we compare only the data portion */
-        for (i = length - k; i < length; i++)
-            if (data[i - length + k] != recd[i])
-                decerror++;
-        if (decerror != 0)
-            System.out.printf("%d message decoding errors\n", decerror);
-        else
-            System.out.printf("Succesful decoding\n");
+        return messageToSpoil;
     }
 
     public static void main(String[] args) {
         BCHEncoder bchEncoder = new BCHEncoder();
         bchEncoder.init();
-        bchEncoder.encode_bch();
-        bchEncoder.addErrors();
-        bchEncoder.decode_bch();
-        bchEncoder.printResults();
+        int[] start = new int[] {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+        int[] encoded = bchEncoder.encode_bch(start);
+        int[] spoiled = bchEncoder.addErrors(encoded);
+        int[] ended = bchEncoder.decode_bch(spoiled);
+
+        System.out.printf("Results:\n");
+
+        System.out.printf("original data  = ");
+        for (int i = 0; i < start.length; i++)
+            System.out.printf("%1d", start[i]);
+
+        System.out.printf("\nrecovered data = ");
+        for (int i = ended.length - start.length; i < ended.length; i++)
+            System.out.printf("%1d", ended[i]);
     }
 }
