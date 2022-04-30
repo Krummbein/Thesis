@@ -1,26 +1,27 @@
 package Solomon;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
 public class SolomonMain {
-    static Encoder e;
-    static int[] bads;
-    static Random rnd;
-    static int s;
-    static Decoder d;
-    static String input;
-    static HashSet<Integer> bad;
-    static char[] c28;
-    static int[] cFFT;
-    static int[] c257;
+     Encoder e;
+     int[] bads;
+     Random rnd;
+     int s;
+     Decoder d;
+     static String input;
+     HashSet<Integer> bad;
+     char[] c28;
+     int[] cFFT;
+     int[] c257;
 
-    static String s2;
-    static String s3;
-    static String s4;
+     String s2;
+     String s3;
+     String s4;
 
-    public static void init(){
+    public void init(int[] intInput){
         // setup
 
         GF28.init();
@@ -41,7 +42,7 @@ public class SolomonMain {
             if(gens257.contains(temp)) gen = (char)temp;
         }
 
-        input = "ORA ORA ORA ORA ORAAAA!!!!!"; //The message to send
+        input = Arrays.toString(intInput); //The message to send
 
         //gen = 10; //If you'd prefer to hardcode the  generator (just make sure its in both GF(2^8) and GF(257)
         s = 5;
@@ -56,7 +57,7 @@ public class SolomonMain {
 
     }
 
-    public static void encode(){
+    public  void encode(){
         // encoding
 
         c28 = e.slow(); // O(nk) with GF(2^8)
@@ -66,12 +67,14 @@ public class SolomonMain {
         bad = createSet(bads);
     }
 
-    public static void decode() {
+    public  void decode() {
         // decoding
 
-        char[] c2 = d.decode(c28, bad);
+        //// e.slow decoding
+        char[] c2 = d.decode(c28); //, bad
         s2 = new String(c2);
 
+        // e.fast decoding
         int[] c4 = d.decode257(cFFT, bad);
         char[] c5 = new char[c4.length];
         for(int i = 0; i < c4.length; i++) {
@@ -79,6 +82,7 @@ public class SolomonMain {
         }
         s3 = new String(c5);
 
+        // e.slow257 decoding
         c4 = d.decode257(c257, bad);
         c5 = new char[c4.length];
         for(int i = 0; i < c4.length; i++) {
@@ -87,7 +91,7 @@ public class SolomonMain {
         s4 = new String(c5);
     }
 
-    public static void showResults(){
+    public  void showResults(){
 
         System.out.print("Erasures: ");
         for(int i = 0; i < 2*s; i++) {
@@ -103,14 +107,7 @@ public class SolomonMain {
         System.out.println("OUTPUT FROM O(nk) IN GF(257): " + s4);
     }
 
-    public static void main(String[] args) {
-        SolomonMain.init();
-        SolomonMain.encode();
-        SolomonMain.decode();
-        SolomonMain.showResults();
-    }
-
-    public static HashSet<Integer> createSet(int[] a) {
+    public  HashSet<Integer> createSet(int[] a) {
         HashSet<Integer> h = new HashSet<Integer>();
         for(int a1 : a) h.add(a1);
         return h;

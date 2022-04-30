@@ -63,7 +63,7 @@ public class Decoder {
         return m;
     }
 
-    public char[] decode(char[] allC, HashSet<Integer> bad) {
+    public char[] decode(char[] allC) { //, HashSet<Integer> bad
         GF28 wn = new GF28((char)1);
         char[][] A = new char[k][k];
         char[] c = new char[k];
@@ -72,7 +72,7 @@ public class Decoder {
 
         for(int i = 0; i < allC.length; i++) {
             if(i != 0) wn = wn.mult(gen);
-            if(bad.contains(i)) continue;
+            //if(bad.contains(i)) continue;
 
             GF28 cur = new GF28((char)1);
             for(int j = 0; j < k; j++) {
