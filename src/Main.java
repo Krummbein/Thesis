@@ -9,7 +9,7 @@ public class Main {
         HammingEncoder hamm = new HammingEncoder();
 
         int[] starterMessage = new int[] {1,0,0,1,0,1,1,1,1,0,1};
-        sol.init(starterMessage);
+        sol.init();
         sol.encode();
         sol.decode();
         sol.showResults();
