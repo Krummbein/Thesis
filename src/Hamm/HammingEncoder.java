@@ -24,6 +24,7 @@ public class HammingEncoder {
         System.out.println();
     }
 */
+
     public void manualInit() {
         System.out.println("Enter the number of bits for the Hamming data:");
         messageLength = scan.nextInt(); //message length
@@ -41,7 +42,33 @@ public class HammingEncoder {
         System.out.println();
     }
 
-    public int[] generateCode(int message[]) {
+    int getParity(int b[], int power) {
+        int parity = 0;
+        for (int i = 0; i < b.length; i++) {
+            if (b[i] != 2) {
+                // If 'i' doesn't contain an unset value,
+                // We will save that index value in k, increase it by 1,
+                // Then we convert it into binary:
+
+                int k = i + 1;
+                String s = Integer.toBinaryString(k);
+
+                //Nw if the bit at the 2^(power) location of the binary value of index is 1
+                //Then we need to check the value stored at that location.
+                //Checking if that value is 1 or 0, we will calculate the parity value.
+
+                int x = ((Integer.parseInt(s)) / ((int) Math.pow(10, power))) % 10;
+                if (x == 1) {
+                    if (b[i] == 1) {
+                        parity = (parity + 1) & 1;
+                    }
+                }
+            }
+        }
+        return parity;
+    }
+
+    public int[] encode(int message[]) {
         // We will return the array as an encoded message
 
 
@@ -84,32 +111,6 @@ public class HammingEncoder {
         return encodedMessage;
     }
 
-    int getParity(int b[], int power) {
-        int parity = 0;
-        for (int i = 0; i < b.length; i++) {
-            if (b[i] != 2) {
-                // If 'i' doesn't contain an unset value,
-                // We will save that index value in k, increase it by 1,
-                // Then we convert it into binary:
-
-                int k = i + 1;
-                String s = Integer.toBinaryString(k);
-
-                //Nw if the bit at the 2^(power) location of the binary value of index is 1
-                //Then we need to check the value stored at that location.
-                //Checking if that value is 1 or 0, we will calculate the parity value.
-
-                int x = ((Integer.parseInt(s)) / ((int) Math.pow(10, power))) % 10;
-                if (x == 1) {
-                    if (b[i] == 1) {
-                        parity = (parity + 1) & 1;
-                    }
-                }
-            }
-        }
-        return parity;
-    }
-
     public int[] addErrors(int[] encodedMessage) {
         System.out.println("Enter position of a bit to alter to check for error detection at the receiver end (0 for no error):");
 
@@ -120,7 +121,7 @@ public class HammingEncoder {
         return encodedMessage;
     }
 
-    Integer[] receive(int recievedMessage[], int parity_count) {
+    Integer[] decode(int recievedMessage[], int parity_count) {
         // This is the receiver code. It receives a Hamming code in array 'a'.
         // We also require the number of parity bits added to the original data.
         // Now it must detect the error and correct it, if any.

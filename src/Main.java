@@ -10,9 +10,13 @@ public class Main {
 
         int[] starterMessage = new int[] {1,0,0,1,0,1,1,1,1,0,1};
         sol.init(starterMessage);
-        sol.encode();
-        sol.decode();
-        sol.showResults();
+        int[] encodedMessage = sol.encode();
+        int[] decodedMessage = sol.decode(encodedMessage);
+
+        System.out.println(Arrays.toString(encodedMessage));
+        System.out.println(Arrays.toString(decodedMessage));
+        //sol.showResults();
+
         /*
         int[] hammEncodedMessage = hamm.generateCode(starterMessage);
 

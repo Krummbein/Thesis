@@ -6,22 +6,22 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class SolomonMain {
-     Encoder e;
-     int[] bads;
-     Random rnd;
-     int s;
-     Decoder d;
-     static String input;
-     HashSet<Integer> bad;
-     char[] c28;
-     int[] cFFT;
-     int[] c257;
+    Encoder e;
+    // int[] bads;
+    Random rnd;
+    int s;
+    Decoder d;
+    static String input;
+    // HashSet<Integer> bad;
+    char[] c28;
+    int[] cFFT;
+    int[] c257;
 
-     String s2;
-     String s3;
-     String s4;
+    String s2;
+    String s3;
+    String s4;
 
-    public void init(int[] intInput){
+    public void init(int[] intInput) {
         // setup
 
         GF28.init();
@@ -36,10 +36,10 @@ public class SolomonMain {
         // System.out.println("# of Generators of GF(257): " + gens257.size());
 
         char gen = 255;
-        while(gen == 255) {
+        while (gen == 255) {
             int index = rnd.nextInt(gens28.size());
             int temp = gens28.get(index);
-            if(gens257.contains(temp)) gen = (char)temp;
+            if (gens257.contains(temp)) gen = (char) temp;
         }
 
         input = Arrays.toString(intInput); //The message to send
@@ -53,46 +53,55 @@ public class SolomonMain {
         // System.out.println("Generator: " + (int)gen);
 
         d = new Decoder(gen, input.length());
-        bads = new int[]{}; //{0,1,2,3,4,5,6,7,8,9}; //{35, 27, 8, 3, 15, 23, 37, 18}; //{0,1,2,5, 9, 13, 19};
+        // bads = new int[]{}; //{0,1,2,3,4,5,6,7,8,9}; //{35, 27, 8, 3, 15, 23, 37, 18}; //{0,1,2,5, 9, 13, 19};
 
     }
 
-    public  void encode(){
+    public int[] encode() {
         // encoding
 
         c28 = e.slow(); // O(nk) with GF(2^8)
-        cFFT = e.fast(); // O(nk) with GF(257)
-        c257 = e.slow257(); // FFT O(nlogn) with GF(257)
 
-        bad = createSet(bads);
+        //cFFT = e.fast(); // O(nk) with GF(257)
+        //c257 = e.slow257(); // FFT O(nlogn) with GF(257)
+
+        return charArrayToIntArray(c28);
     }
 
-    public  void decode() {
+    public int[] decode(int[] encodedMessage) {
         // decoding
 
         //// e.slow decoding
-        char[] c2 = d.decode(c28); //, bad
-        s2 = new String(c2);
+        char [] encodedMessageInChars = intArrayToCharArray(encodedMessage);
+        char[] c2 = d.decode(encodedMessageInChars); //, bad
+
+        return charArrayToIntArray(c2);
+        //s2 = new String(c2);
+
+        /*
 
         // e.fast decoding
         int[] c4 = d.decode257(cFFT); //, bad
         char[] c5 = new char[c4.length];
-        for(int i = 0; i < c4.length; i++) {
-            c5[i] = (char)(c4[i]);
+        for (int i = 0; i < c4.length; i++) {
+            c5[i] = (char) (c4[i]);
         }
         s3 = new String(c5);
 
         // e.slow257 decoding
         c4 = d.decode257(c257); //, bad
         c5 = new char[c4.length];
-        for(int i = 0; i < c4.length; i++) {
-            c5[i] = (char)(c4[i]);
+        for (int i = 0; i < c4.length; i++) {
+            c5[i] = (char) (c4[i]);
         }
         s4 = new String(c5);
+
+        */
+
     }
 
-    public  void showResults(){
-
+    public void showResults() {
+/*
         System.out.print("Erasures: ");
         for(int i = 0; i < 2*s; i++) {
             int b = rnd.nextInt(input.length() + 2*s);
@@ -100,16 +109,33 @@ public class SolomonMain {
             System.out.print(b + ", ");
         }
         System.out.println("\n");
-
+*/
 
         System.out.println("OUTPUT FROM O(nk) IN GF(2^8): " + s2);
         System.out.println("FFT OUTPUT DECODED: " + s3);
         System.out.println("OUTPUT FROM O(nk) IN GF(257): " + s4);
     }
 
-    public  HashSet<Integer> createSet(int[] a) {
+    public HashSet<Integer> createSet(int[] a) {
         HashSet<Integer> h = new HashSet<Integer>();
-        for(int a1 : a) h.add(a1);
+        for (int a1 : a) h.add(a1);
         return h;
+    }
+
+
+    public static int[] charArrayToIntArray(char[] charArr){
+        int[] intArr = new int[charArr.length];
+        for (int i = 0; i<intArr.length; i++) {
+            intArr[i] = Character.getNumericValue(charArr[i]);
+        }
+        return intArr;
+    }
+
+    public static char[] intArrayToCharArray(int[] intArr){
+        char[] charArr = new char[intArr.length];
+        for(int i = 0; i< charArr.length; i++){
+            charArr[i] = Character.forDigit(intArr[i] , 10);
+        }
+        return charArr;
     }
 }
